@@ -1,0 +1,30 @@
+circuit GCD : 
+  module GCD : 
+    input clk : Clock
+    input reset : UInt<1>
+    output io : {flip a : UInt<16>, flip b : UInt<16>, flip e : UInt<1>, z : UInt<16>, v : UInt<1>}
+    
+    io is invalid
+    reg x : UInt, clk
+    reg y : UInt, clk
+    node T_7 = gt(x, y) @[GCD.scala 17:13] 
+    when T_7 : @[GCD.scala 17:18] 
+      node T_8 = sub(x, y) @[GCD.scala 17:27] 
+      node T_9 = tail(T_8, 1) @[GCD.scala 17:27] 
+      x <= T_9 @[GCD.scala 17:22] 
+      skip @[GCD.scala 17:18] 
+    node T_10 = gt(x, y) @[GCD.scala 18:13] 
+    node T_12 = eq(T_10, UInt<1>("h00")) @[Conditional.scala 16:11] 
+    when T_12 : @[Conditional.scala 16:15] 
+      node T_13 = sub(y, x) @[GCD.scala 18:27] 
+      node T_14 = tail(T_13, 1) @[GCD.scala 18:27] 
+      y <= T_14 @[GCD.scala 18:22] 
+      skip @[Conditional.scala 16:15] 
+    when io.e : @[GCD.scala 19:15] 
+      x <= io.a @[GCD.scala 19:19] 
+      y <= io.b @[GCD.scala 19:30] 
+      skip @[GCD.scala 19:15] 
+    io.z <= x @[GCD.scala 20:8] 
+    node T_16 = eq(y, UInt<1>("h00")) @[GCD.scala 21:13] 
+    io.v <= T_16 @[GCD.scala 21:8] 
+    
