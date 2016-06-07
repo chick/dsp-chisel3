@@ -5,15 +5,16 @@ package chisel.dsp
 import Chisel._
 
 object FixedPointNumber {
-  def apply(fractionalWidth: Int): FixedPointNumber = {
-    apply(fractionalWidth, NumberRange.fromWidth(fractionalWidth), NO_DIR)
+  def apply(fractionalWidth: Int, integerWidth: Int = 0): FixedPointNumber = {
+    apply(fractionalWidth, integerWidth, NumberRange.fromWidth(fractionalWidth), NO_DIR)
   }
-  def apply(fractionalWidth: Int, range: NumberRange, direction: Direction): FixedPointNumber = {
+  def apply(fractionalWidth: Int, integerWidth: Int, range: NumberRange, direction: Direction): FixedPointNumber = {
+    val bitWidth = fractionalWidth + integerWidth
     direction match {
-      case OUTPUT => new FixedPointNumber(0, fractionalWidth, range, Some(SInt(OUTPUT, range.width)))
-      case INPUT  => new FixedPointNumber(0, fractionalWidth, range, Some(SInt(OUTPUT, range.width))).flip()
-      case NO_DIR => new FixedPointNumber(0, fractionalWidth, range, Some(SInt(NO_DIR, range.width)))
-      case _      => new FixedPointNumber(0, fractionalWidth, range, Some(SInt(OUTPUT, range.width)))
+      case OUTPUT => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(OUTPUT, bitWidth)))
+      case INPUT  => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(OUTPUT, bitWidth))).flip()
+      case NO_DIR => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(NO_DIR, bitWidth)))
+      case _      => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(OUTPUT, bitWidth)))
     }
   }
 }
@@ -25,6 +26,7 @@ object FixedPointNumber {
   * exponential notation.
   * A fixed point number has a minimum and maximum value, these are used in to possilby limit bit
   * expansion below the default behavior of various arithmetic and logic operations.
+  *
   * @param integerWidth    the number of bits to the left of the binary decimal point
   * @param fractionalWidth the number of bits to the rigth of binary decimal point
   * @param range           a range object, with a minimum and maximum value
@@ -37,15 +39,18 @@ class FixedPointNumber(
                         gen:                 Option[SInt] = None
                       ) extends Bundle with Qnm {
 
-  val value = gen.getOrElse(SInt(OUTPUT, width = range.width))
+  val value = gen.getOrElse(SInt(OUTPUT, width = integerWidth + fractionalWidth))
 
   def + (that: FixedPointNumber): FixedPointNumber = {
-    val newRange = range + that.getRange()
+    val (a, b, aRange, bRange, newFractionalWidth) = this.matchFractionalWidths(that)
 
-    val result = Wire(new FixedPointNumber(integerWidth, fractionalWidth, newRange))
+    val newRange = aRange + bRange
 
-    result.value := this.value + that.value
+    val newIntWidth = this.integerWidth.max(that.integerWidth)
 
+    val result = Wire(new FixedPointNumber(newIntWidth, fractionalWidth, newRange, Some(SInt())))
+
+    result.value := a + b
     result
   }
 
@@ -77,6 +82,24 @@ class FixedPointNumber(
       (this.value, that.value, range, that.range, fractionalWidth)
     }
   }
+
+//  def matchWidth(that: FixedPointNumber): (SInt, SInt, NumberRange, NumberRange, Int, Int) = {
+//    val (a, b, aRange, bRange, fractionalWidth) = matchFractionalWidths(that)
+//    val widthDifference = b.getWidth - a.getWidth
+//    val (newA, newB) = {
+//      if (widthDifference > 0) {
+//        (Cat(Fill(widthDifference, sign), a).asSInt(), b)
+//      }
+//      else if (widthDifference < 0) {
+//        (a, Cat(Fill(widthDifference.abs, that.sign), b).asSInt())
+//      }
+//      else {
+//        (a, b)
+//      }
+//    }
+//    val newIntWidth = a.getWidth - fractionalWidth
+//    (newA, newB, aRange, bRange, newIntWidth, fractionalWidth)
+//  }
 
   override def cloneType: this.type = {
     new FixedPointNumber(integerWidth, fractionalWidth, range, gen).asInstanceOf[this.type]

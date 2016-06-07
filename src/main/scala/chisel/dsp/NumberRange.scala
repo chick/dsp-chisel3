@@ -25,16 +25,11 @@ object NumberRange {
     IntRange(min.toInt, max.toInt)
   }
 
-  def fromWidth(width: Int, bitWidth: Int = -1): NumberRange = {
-    if(width == 0) {
-      IntRange(0, 0)
-    }
-    else if(width < 0) {
-      IntRange(0, BigInt("1"*width.abs, 2))
-    }
-    else {
-      IntRange(0, BigInt("1"*width, 2))
-    }
+  def fromWidth(fractionalWidth: Int, integerWidth: Int = 0): NumberRange = {
+    val bitWidth = integerWidth + fractionalWidth
+    val magnitude = BigInt("1" * bitWidth, 2)
+
+    IntRange(-magnitude, magnitude)
   }
 }
 
@@ -66,3 +61,4 @@ case class IntRange(min: BigInt, max: BigInt) extends NumberRange {
     }
   }
 }
+
