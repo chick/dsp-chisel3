@@ -25,8 +25,16 @@ object NumberRange {
     IntRange(min.toInt, max.toInt)
   }
 
-  def fromWidth(width: Int): NumberRange = {
-    IntRange(0, BigInt("1"*width, 2))
+  def fromWidth(width: Int, bitWidth: Int = -1): NumberRange = {
+    if(width == 0) {
+      IntRange(0, 0)
+    }
+    else if(width < 0) {
+      IntRange(0, BigInt("1"*width.abs, 2))
+    }
+    else {
+      IntRange(0, BigInt("1"*width, 2))
+    }
   }
 }
 

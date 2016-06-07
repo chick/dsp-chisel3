@@ -6,7 +6,33 @@ import Chisel.internal.firrtl.KnownWidth
 import org.scalatest.{Matchers, FlatSpec}
 
 class FixedPointNumberSpec extends FlatSpec with Matchers {
+  val MaxTestFractionalWidth = 10
+  val MaxSIntWidth = 100
   behavior of "FixedPointNumber#matchFractionalWidth"
+
+  it should "return a and b of matching fractional widths, with ranges adjusted" in {
+    for {
+      sIntWidth        <- 0 to MaxSIntWidth
+      fractionalWidth1 <- 0 to MaxTestFractionalWidth
+      fractionalWidth2 <- 0 to MaxTestFractionalWidth
+    } {
+      println(s"Testing $fractionalWidth1 and $fractionalWidth2")
+      val f1 = FixedPointNumber(fractionalWidth1)
+      val f2 = FixedPointNumber(fractionalWidth2)
+
+      val (a, b, aRange, bRange, fractionalWidth) = f1.matchFractionalWidths(f2)
+
+      fractionalWidth should be(fractionalWidth1.max(fractionalWidth2))
+
+      aRange should be(NumberRange.fromWidth(fractionalWidth))
+      bRange should be(NumberRange.fromWidth(fractionalWidth))
+
+      a.width.isInstanceOf[KnownWidth] should be(true)
+      a.width.asInstanceOf[KnownWidth].get should be(fractionalWidth)
+      b.width.isInstanceOf[KnownWidth] should be(true)
+      b.width.asInstanceOf[KnownWidth].get should be(fractionalWidth)
+    }
+  }
 
   it should "return originals and their respective ranges when fractional difference is 0" in {
     val f1 = FixedPointNumber(10)
@@ -20,9 +46,11 @@ class FixedPointNumberSpec extends FlatSpec with Matchers {
 
     a.width.isInstanceOf[KnownWidth] should be (true)
     a.width.asInstanceOf[KnownWidth].get should be (10)
+    b.width.isInstanceOf[KnownWidth] should be (true)
+    b.width.asInstanceOf[KnownWidth].get should be (10)
   }
 
-  it should "pad right pad b to match a when a has bigger fractional width" in {
+  it should "right pad b to match a when a has bigger fractional width" in {
     val f1 = FixedPointNumber(7)
     val f2 = FixedPointNumber(5)
 
@@ -38,7 +66,7 @@ class FixedPointNumberSpec extends FlatSpec with Matchers {
     b.width.asInstanceOf[KnownWidth].get should be (7)
   }
 
-  it should "pad right pad b to match a when a has bigger fractional width" in {
+  it should "right pad a to match b when b has bigger fractional width" in {
     val f1 = FixedPointNumber(7)
     val f2 = FixedPointNumber(5)
 

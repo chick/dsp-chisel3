@@ -79,7 +79,7 @@ class FixedPointNumber(
   }
 
   override def cloneType: this.type = {
-    (new FixedPointNumber(integerWidth, fractionalWidth, range, gen)).asInstanceOf[this.type ]
+    new FixedPointNumber(integerWidth, fractionalWidth, range, gen).asInstanceOf[this.type]
   }
 }
 
@@ -104,6 +104,6 @@ class FixedPointLiteral(
   value := literalValue.U
 
   override def cloneType: this.type = {
-    (new FixedPointLiteral(literalValue, fractionalWidth, range, underlying)).asInstanceOf[this.type ]
+    new FixedPointLiteral(literalValue, fractionalWidth, range, underlying).asInstanceOf[this.type]
   }
 }
