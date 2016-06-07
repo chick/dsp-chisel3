@@ -23,7 +23,7 @@ class NumberRangeSpec extends FlatSpec with Matchers {
     }
   }
 
-  they should "under addition return min of the mins and max of the maxes" in {
-    NumberRange(4, 100) + NumberRange(-22, 33) should be (NumberRange(-22, 100))
+  they should "under addition sum of mins and sum of maxes" in {
+    NumberRange(4, 100) + NumberRange(-22, 33) should be (NumberRange(-18, 133))
   }
 }

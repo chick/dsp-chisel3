@@ -27,5 +27,4 @@ class IncrementerTestSpec extends FlatSpec with Matchers {
     runPeekPokeTester(() => new Incrementer(8, 16)){
       (c,b) => new IncrementerTests(c,b)} should be (true)
   }
-
 }
