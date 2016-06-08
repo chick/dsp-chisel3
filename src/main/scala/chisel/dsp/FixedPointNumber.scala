@@ -59,12 +59,12 @@ class FixedPointNumber(
 
     val newRange = aRange * bRange
 
-    val newIntWidth = this.integerWidth.max(that.integerWidth)
+    val newIntWidth = this.integerWidth * that.integerWidth
     val multipliedFractionalWidth = newFractionalWidth * newFractionalWidth
 
-    val result = Wire(new FixedPointNumber(newIntWidth, fractionalWidth, newRange, Some(SInt())))
+    val result = Wire(new FixedPointNumber(newIntWidth, multipliedFractionalWidth, newRange, Some(SInt())))
 
-    result.value := a + b
+    result.value := a * b
     result
   }
 
