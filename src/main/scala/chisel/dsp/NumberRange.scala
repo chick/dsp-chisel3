@@ -8,7 +8,9 @@ import Chisel.internal.firrtl.Width
 trait NumberRange {
   def width: Width
   def + (that: NumberRange): NumberRange
+  def * (that: NumberRange): NumberRange
   def shift(n: Int): NumberRange
+  def contains(value: BigInt): Boolean
 }
 
 object NumberRange {
@@ -36,7 +38,9 @@ object NumberRange {
 object UndefinedRange extends NumberRange {
   def width: Width = Width()
   def + (that: NumberRange): NumberRange = this
+  def * (that: NumberRange): NumberRange = this
   def shift(n: Int): NumberRange = this
+  def contains(value: BigInt): Boolean = true
 }
 
 case class IntRange(min: BigInt, max: BigInt) extends NumberRange {
@@ -46,6 +50,17 @@ case class IntRange(min: BigInt, max: BigInt) extends NumberRange {
   def + (other: NumberRange): NumberRange = other match {
     case UndefinedRange    => UndefinedRange
     case that: IntRange    => IntRange(this.min + that.min, this.max + that.max)
+  }
+  def * (other: NumberRange): NumberRange = other match {
+    case UndefinedRange    => UndefinedRange
+    case that: IntRange    => {
+      val products = Array(this.min * that.min, this.min * that.max, this.max * that.min, this.max * that.max)
+      IntRange(products.min, products.max)
+    }
+  }
+
+  def contains(value: BigInt): Boolean = {
+    min <= value && value <= max
   }
 //  override def equals(other: Any): Boolean = other match {
 //    case that : IntRange => min == that.min && max == that.max

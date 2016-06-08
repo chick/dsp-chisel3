@@ -5,6 +5,7 @@ package chisel.dsp
 import org.scalatest.{Matchers, FlatSpec}
 
 class NumberRangeSpec extends FlatSpec with Matchers {
+  val MaxProductTestValue = 2
   behavior of "Undefined ranges"
 
   they should "add with anything to produce an unknown range" in {
@@ -23,7 +24,32 @@ class NumberRangeSpec extends FlatSpec with Matchers {
     }
   }
 
-  they should "under addition sum of mins and sum of maxes" in {
+  it should "under addition sum of mins and sum of maxes" in {
     NumberRange(4, 100) + NumberRange(-22, 33) should be (NumberRange(-18, 133))
+  }
+
+  it should "compute proper max an min for all values in range" in {
+    for {
+      i <- -MaxProductTestValue to MaxProductTestValue
+      j <- i                    to MaxProductTestValue
+      m <- -MaxProductTestValue to MaxProductTestValue
+      n <- m                    to MaxProductTestValue
+    } {
+      var foundLow = false
+      var foundHigh = false
+      val multRange = (IntRange(i, j) * IntRange(m, n)).asInstanceOf[IntRange]
+      for {
+          x <- i to j
+          y <- m to n
+      } {
+        val product = x * y
+        if(product == multRange.min) foundLow = true
+        if(product == multRange.max) foundHigh = true
+        // println(s"a $i,$j b $m,$n t $x,$y p $product nr $multRange")
+        multRange.contains(product) should be (true)
+      }
+      foundLow should be (true)
+      foundHigh should be (true)
+    }
   }
 }

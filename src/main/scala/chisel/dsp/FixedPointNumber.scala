@@ -54,6 +54,20 @@ class FixedPointNumber(
     result
   }
 
+  def * (that: FixedPointNumber): FixedPointNumber = {
+    val (a, b, aRange, bRange, newFractionalWidth) = this.matchFractionalWidths(that)
+
+    val newRange = aRange * bRange
+
+    val newIntWidth = this.integerWidth.max(that.integerWidth)
+    val multipliedFractionalWidth = newFractionalWidth * newFractionalWidth
+
+    val result = Wire(new FixedPointNumber(newIntWidth, fractionalWidth, newRange, Some(SInt())))
+
+    result.value := a + b
+    result
+  }
+
   def getRange(dummy: Int = 0): NumberRange = range
 
   def matchFractionalWidths(that: FixedPointNumber): (SInt, SInt, NumberRange, NumberRange, Int) = {
