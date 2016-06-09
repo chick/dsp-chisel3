@@ -30,7 +30,7 @@ class TimesX(val integerWidth: Int, val fractionalWidth: Int, val coefficient: D
   }
 
   val c = Wire(FixedPointLiteral(coefficient, 2))
-  c.value := FixedPointLiteral.toBigInt(coefficient, fractionalWidth).S
+  c.value := FixedPointLiteral.toBigInt(coefficient, c.fractionalWidth).S
   io.out := io.in * c
 }
 
@@ -45,7 +45,7 @@ class TimeXTest(c: TimesX, backend: Option[Backend] = None) extends PeekPokeTest
 
     val result = FixedPointLiteral.toDouble(output, c.fractionalWidth)
 
-    println(s"x $x y $y input $input output $output result $result")
+    println(s"i $i x $x y $y input $input output $output result $result")
     assert(result == y)
 
 
@@ -62,7 +62,7 @@ class MultiplyTestSpec extends FlatSpec with Matchers {
     val intWidth = 4
     val fracWidth = 4
 
-    runPeekPokeTester(() => new TimesX(4, 2, 0.5)){
+    runPeekPokeTester(() => new TimesX(4, 4, 0.5)){
       (c,b) => new TimeXTest(c,b)
     } should be (true)
 
