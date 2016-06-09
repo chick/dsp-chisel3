@@ -5,8 +5,8 @@ package chisel.dsp
 import Chisel._
 
 object FixedPointNumber {
-  def apply(fractionalWidth: Int, integerWidth: Int = 0): FixedPointNumber = {
-    apply(fractionalWidth, integerWidth, NumberRange.fromWidth(fractionalWidth), NO_DIR)
+  def apply(fractionalWidth: Int, integerWidth: Int = 0, direction: Direction = OUTPUT): FixedPointNumber = {
+    apply(fractionalWidth, integerWidth, NumberRange.fromWidth(fractionalWidth), direction)
   }
   def apply(fractionalWidth: Int, integerWidth: Int, range: NumberRange, direction: Direction): FixedPointNumber = {
     val bitWidth = fractionalWidth + integerWidth
@@ -40,6 +40,7 @@ class FixedPointNumber(
                       ) extends Bundle with Qnm {
 
   val value = gen.getOrElse(SInt(OUTPUT, width = integerWidth + fractionalWidth))
+  val isLiteral: Boolean = false
 
   def + (that: FixedPointNumber): FixedPointNumber = {
     val (a, b, aRange, bRange, newFractionalWidth) = this.matchFractionalWidths(that)
@@ -65,6 +66,26 @@ class FixedPointNumber(
     val result = Wire(new FixedPointNumber(newIntWidth, multipliedFractionalWidth, newRange, Some(SInt())))
 
     result.value := a * b
+    result
+  }
+
+  def := (that: FixedPointNumber): Unit = {
+    val (a, b, aRange, bRange, newFractionalWidth) = this.matchFractionalWidths(that)
+
+    val fractionalDifference = this.fractionalWidth - that.fractionalWidth
+    if(fractionalDifference > 0) {
+      this.value := that.value << fractionalDifference
+    }
+    else {
+      this.value := that.value >> fractionalDifference.abs
+    }
+    val newRange = aRange + bRange
+
+    val newIntWidth = this.integerWidth.max(that.integerWidth)
+
+    val result = Wire(new FixedPointNumber(newIntWidth, fractionalWidth, newRange, Some(SInt())))
+
+    result.value := a + b
     result
   }
 
@@ -121,26 +142,45 @@ class FixedPointNumber(
 }
 
 object FixedPointLiteral {
-  def apply(
-             literalValue : Int,
-             fractionalWidth: Int = 0,
-             range: NumberRange = UndefinedRange,
-             underlying: Option[SInt] = None
-           ): FixedPointLiteral = {
-    Wire(new FixedPointLiteral(literalValue, range = NumberRange(literalValue.abs)))
+  def toBigInt(x: Double, fractionalWidth: Int) = {
+    val multiplier = math.pow(2,fractionalWidth)
+    val result = BigInt(math.round(x * multiplier))
+    result
   }
+
+  def toDouble(i: BigInt, fractionalWidth: Int) = {
+    val multiplier = math.pow(2,fractionalWidth)
+    val result = i.toDouble / multiplier
+    result
+  }
+
+  def apply(x: Double, fractionalWidth: Int = 4): FixedPointLiteral = {
+    val bigInt = toBigInt(x, fractionalWidth)
+    val integerWidth = log2Up(x.toInt)
+
+    val r = new FixedPointLiteral(bigInt, integerWidth, fractionalWidth, IntRange(bigInt, bigInt))
+//    r.value := bigInt.S
+    r
+  }
+//  def apply(
+//             literalValue : Int,
+//             fractionalWidth: Int = 0,
+//             range: NumberRange = UndefinedRange,
+//             underlying: Option[SInt] = None
+//           ): FixedPointLiteral = {
+//    Wire(new FixedPointLiteral(literalValue, integerWidth = 0, range = NumberRange(literalValue.abs)))
+//  }
 }
 class FixedPointLiteral(
-                        literalValue : Int,
-                        fractionalWidth: Int = 0,
-                        range: NumberRange = UndefinedRange,
-                        underlying: Option[SInt] = None
-) extends FixedPointNumber(0, fractionalWidth, range, underlying) {
-  override val value = Wire(underlying.getOrElse(SInt(width = range.width)))
-
-  value := literalValue.U
+                        val literalValue:  BigInt,
+                        integerWidth:      Int,
+                        fractionalWidth:   Int = 0,
+                        range:             NumberRange = UndefinedRange,
+                        underlying:        Option[SInt] = None
+) extends FixedPointNumber(integerWidth, fractionalWidth, range, underlying) {
+  override val isLiteral: Boolean = true
 
   override def cloneType: this.type = {
-    new FixedPointLiteral(literalValue, fractionalWidth, range, underlying).asInstanceOf[this.type]
+    new FixedPointLiteral(literalValue, integerWidth, fractionalWidth, range, underlying).asInstanceOf[this.type]
   }
 }
