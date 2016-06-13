@@ -43,7 +43,7 @@ class FixedPointNumber(
   val isLiteral: Boolean = false
 
   def + (that: FixedPointNumber): FixedPointNumber = {
-    val (a, b, aRange, bRange, newFractionalWidth) = this.matchFractionalWidths(that)
+    val (a, b, aRange, bRange, _) = this.matchFractionalWidths(that)
 
     val newRange = aRange + bRange
 
@@ -70,8 +70,6 @@ class FixedPointNumber(
   }
 
   def := (that: FixedPointNumber): Unit = {
-    val (a, b, aRange, bRange, newFractionalWidth) = this.matchFractionalWidths(that)
-
     val fractionalDifference = this.fractionalWidth - that.fractionalWidth
     if(fractionalDifference > 0) {
       this.value := that.value << fractionalDifference
@@ -134,7 +132,7 @@ class FixedPointNumber(
 }
 
 object FixedPointLiteral {
-  def toBigInt(x: Double, fractionalWidth: Int) = {
+  def toBigInt(x: Double, fractionalWidth: Int): BigInt = {
     val multiplier = math.pow(2,fractionalWidth)
     val result = BigInt(math.round(x * multiplier))
     result
@@ -146,7 +144,7 @@ object FixedPointLiteral {
     result
   }
 
-  def apply(x: Double, fractionalWidth: Int = 4): FixedPointLiteral = {
+  def apply(x: Double, fractionalWidth: Int = 0): FixedPointLiteral = {
     val bigInt = toBigInt(x, fractionalWidth)
     val integerWidth = log2Up(x.toInt)
 
