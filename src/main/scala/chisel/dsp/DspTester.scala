@@ -16,6 +16,6 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
 
   def peek(port: FixedPointNumber): FixedPointLiteral = {
     val sInt = peek(port.value)
-    FixedPointLiteral(sInt, port.integerWidth, port.fractionalWidth)
+    FixedPointLiteral(sInt, port.fractionalWidth)
   }
 }
