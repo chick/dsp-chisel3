@@ -17,19 +17,22 @@ class Adder3(iw: Int, fw: Int) extends Module {
   io.c := io.a + constant
 }
 
-class Adder3Tester(c: Adder3, backend: Option[Backend] = None) extends PeekPokeTester(c, _backend = backend) {
+class Adder3Tester(c: Adder3, backend: Option[Backend] = None) extends DspTester(c, _backend = backend) {
   for(i <- 0 to 4) {
-    poke(c.io.a.value, i)
-    val result = peek(c.io.c.value)
-    println(s"a <= $i c => $result")
+    val double  = 0.25 * i.toDouble
+    poke(c.io.a, double)
+    val result = peek(c.io.c)
+    val expected = double + 3.0
+    val expectedLiteral = FixedPointLiteral(expected, c.io.c.fractionalWidth)
+    println(s"a <= $i c => $result expected $expectedLiteral")
   }
 }
 class Adder3Spec extends ChiselFlatSpec {
-  val intWidth  = 4
+  val intWidth  = 8
   val fracWidth = 4
 
   "Adder" should "correctly add randomly generated numbers" in {
     runPeekPokeTester(() => new Adder3(intWidth, fracWidth)){
       (c,b) => new Adder3Tester(c, b)} should be (true)
   }
-  }
+}

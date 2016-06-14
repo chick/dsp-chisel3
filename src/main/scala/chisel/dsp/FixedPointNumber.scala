@@ -145,7 +145,7 @@ object FixedPointLiteral {
     result
   }
 
-  def apply(x: Double, fractionalWidth: Int = 0): FixedPointLiteral = {
+  def apply(x: Double, fractionalWidth: Int): FixedPointLiteral = {
     val bigInt = toBigInt(x, fractionalWidth)
     val integerWidth = log2Up(x.toInt) + 1
 
@@ -153,6 +153,13 @@ object FixedPointLiteral {
     r.value := SInt(bigInt, integerWidth + fractionalWidth)
     r
   }
+  def apply(bigInt: BigInt, integerWidth: Int = 0, fractionalWidth: Int = 0): FixedPointLiteral = {
+
+    val r = Wire(new FixedPointLiteral(bigInt, integerWidth, fractionalWidth, IntRange(bigInt, bigInt)))
+    r.value := SInt(bigInt, integerWidth + fractionalWidth)
+    r
+  }
+
 }
 class FixedPointLiteral(
                         val literalValue:  BigInt,
@@ -165,5 +172,8 @@ class FixedPointLiteral(
 
   override def cloneType: this.type = {
     new FixedPointLiteral(literalValue, integerWidth, fractionalWidth, range, underlying).asInstanceOf[this.type]
+  }
+  override def toString: String = {
+    f"${FixedPointLiteral.toDouble(literalValue, fractionalWidth)}($literalValue%x):Q$integerWidth:$fractionalWidth"
   }
 }
