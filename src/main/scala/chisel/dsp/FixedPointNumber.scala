@@ -2,7 +2,8 @@
 
 package chisel.dsp
 
-import Chisel._
+import chisel._
+import chisel.util.{log2Up, Fill, Cat}
 
 object FixedPointNumber {
   def apply(fractionalWidth: Int, integerWidth: Int = 0, direction: Direction = OUTPUT): FixedPointNumber = {
@@ -49,7 +50,7 @@ class FixedPointNumber(
 
     val newIntWidth = this.integerWidth.max(that.integerWidth)
 
-    val result = Wire(new FixedPointNumber(newIntWidth, fractionalWidth, newRange, Some(SInt())))
+    val result = Wire(new FixedPointNumber(newIntWidth, fractionalWidth, newRange))
 
     result.value := a + b
     result
@@ -146,20 +147,12 @@ object FixedPointLiteral {
 
   def apply(x: Double, fractionalWidth: Int = 0): FixedPointLiteral = {
     val bigInt = toBigInt(x, fractionalWidth)
-    val integerWidth = log2Up(x.toInt)
+    val integerWidth = log2Up(x.toInt) + 1
 
-    val r = new FixedPointLiteral(bigInt, integerWidth, fractionalWidth, IntRange(bigInt, bigInt))
-//    r.value := bigInt.S
+    val r = Wire(new FixedPointLiteral(bigInt, integerWidth, fractionalWidth, IntRange(bigInt, bigInt)))
+    r.value := SInt(bigInt, integerWidth + fractionalWidth)
     r
   }
-//  def apply(
-//             literalValue : Int,
-//             fractionalWidth: Int = 0,
-//             range: NumberRange = UndefinedRange,
-//             underlying: Option[SInt] = None
-//           ): FixedPointLiteral = {
-//    Wire(new FixedPointLiteral(literalValue, integerWidth = 0, range = NumberRange(literalValue.abs)))
-//  }
 }
 class FixedPointLiteral(
                         val literalValue:  BigInt,

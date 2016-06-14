@@ -2,8 +2,8 @@
 
 package chisel.dsp
 
-import Chisel.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
-import Chisel._
+import chisel.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
+import chisel._
 import org.scalatest.{Matchers, FlatSpec}
 
 class Incrementer(fractionalWidth: Int, adderSize: Int) extends Module {
