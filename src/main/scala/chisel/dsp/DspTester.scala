@@ -2,7 +2,7 @@
 
 package chisel.dsp
 
-import chisel.iotesters.{Backend, PeekPokeTester}
+import chisel.iotesters.{PeekPokeTester, Backend}
 import chisel.core.Module
 
 class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends PeekPokeTester(c, _backend = _backend){
@@ -18,4 +18,19 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
     val sInt = peek(port.value)
     FixedPointLiteral(sInt, port.fractionalWidth)
   }
+
+  def expect(port: FixedPointNumber, expected: FixedPointLiteral): Unit = {
+    val sInt = peek(port.value)
+    val result = FixedPointLiteral(sInt, port.fractionalWidth)
+//    println(s"XXXXX ${result.literalValue} != ${expected.literalValue}")
+
+    if(result.literalValue != expected.literalValue) {
+      println(s"Error: expect(${port}, $expected) got $result instead")
+      expect(port.value, expected.literalValue)
+    }
+  }
+
+//  def step(n: Int): Unit = {
+//    super.step(n)
+//  }
 }

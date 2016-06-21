@@ -2,8 +2,10 @@
 
 package chisel.dsp
 
+import chisel.iotesters.{runPeekPokeTester, Backend}
 import chisel._
 import chisel.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
+import firrtl_interpreter._
 import org.scalatest.{Matchers, FlatSpec}
 
 /**
@@ -28,25 +30,31 @@ object FixedParams {
 }
 case class AdderParams(a: FixedParams, b: FixedParams, c: FixedParams) {
   val which = Array(a, b, c)
+
   def makeIO(i: AdderIndex, direction: Direction): FixedPointNumber = {
     val param = which(i.n)
     FixedPointNumber(param.i, param.f, NumberRange(param.l, param.h), direction)
   }
-  def getRange(i: AdderIndex): Iterator[Int] = {
+  def getRange(i: AdderIndex): Array[Int] = {
     val param = which(i.n)
-    val maxPositive = BigInt("1" * (param.i + param.f - 1), 2)
-    val maxNegative = -(maxPositive + 1)
-//    new Range(maxNegative.toInt, maxPositive.toInt, 1).iterator
-    new Range(0, maxPositive.toInt, 1).iterator
+    val (maxNegative, maxPositive) = extremaOfSIntOfWidth(param.i + param.f)
+    println(s"Range for (${param.i},${param.f}) is $maxNegative to $maxPositive")
+//    (maxNegative.toInt to maxPositive.toInt).toArray
+    Array(maxNegative.toInt, maxPositive.toInt)
   }
   def getIncrement(i: AdderIndex): Double = {
     val param = which(i.n)
     1.0 / math.pow(2, param.f)
   }
+  def getFractionalWidth(i: AdderIndex): Int = {
+    val param = which(i.n)
+    param.f
+  }
 }
 
 /**
   * Add two arbitrarily configured fixed point numbers into a third arbitrarily configured
+  *
   * @param params
   */
 class Adder(val params: AdderParams) extends Module {
@@ -56,15 +64,16 @@ class Adder(val params: AdderParams) extends Module {
     val c = params.makeIO(C, OUTPUT)
   }
   io.c := io.a + io.b
-  printf("a %d b %d c %d\n", io.a.value.asUInt() , io.b.value.asUInt() , io.c.value.asUInt() )
+  printf(s"a %d.S<${io.a.width.get}> b %d.S<${io.b.width.get}> c %d.S<${io.c.width.get}>\n", io.a.value.asSInt() , io.b.value.asSInt() , io.c.value.asSInt() )
 }
 
 /**
   * run through a range of values, validating add works as it is supposed to
+  *
   * @param c
   * @param backend
   */
-class AdderTests(c: Adder, backend: Option[Backend] = None) extends PeekPokeTester(c, _backend = backend) {
+class AdderTests(c: Adder, backend: Option[Backend] = None) extends DspTester(c, _backend = backend) {
   val params = c.params
 
   val r1 = params.getRange(A)
@@ -73,28 +82,71 @@ class AdderTests(c: Adder, backend: Option[Backend] = None) extends PeekPokeTest
     aIndex <- r1
     bIndex <- r2
   } {
-    val aVal   = aIndex.toDouble * params.getIncrement(A)
-    val bVal   = bIndex.toDouble * params.getIncrement(B)
+    println(s"Adder begin $aIndex $bIndex")
+    val aInput   = (aIndex.toDouble * params.getIncrement(A)).toFixed(params.getFractionalWidth(A))
+    val bInput   = (bIndex.toDouble * params.getIncrement(B)).toFixed(params.getFractionalWidth(B))
 
-    println(s"$aIndex $bIndex $aVal $bVal")
-    poke(c.io.a.value, BigInt(aIndex))
-    poke(c.io.b.value, BigInt(bIndex))
+    println(s"$aIndex $bIndex $aInput $bInput")
+    poke(c.io.a, aInput)
+    poke(c.io.b, bInput)
 
-    val expectedDouble = aVal + bVal
+    val expectedDouble = FixedPointLiteral(aInput.toDouble + bInput.toDouble, params.getFractionalWidth(C))
 
-    val result = peek(c.io.c.value)
-    val doubleResult = FixedPointLiteral.toDouble(result, c.io.c.fractionalWidth)
-
-    println(s"poke(a,$aIndex($aVal)) + poke(b,$bIndex($bVal)) => $result($doubleResult) expected $expectedDouble   $params")
-
-
+    val result = peek(c.io.c)
+    println(s"addertests: $aInput + $bInput => $result expected $expectedDouble")
+    if(result.literalValue != expectedDouble.literalValue) {
+      println("X" * 80)
+      println("X" * 80)
+      println("X" * 80)
+    }
+    expect(c.io.c, expectedDouble)
   }
 }
+//class AdderTests(c: Adder, backend: Option[Backend] = None) extends DspTester(c, _backend = backend) {
+//  val params = c.params
+//
+//  val r1 = params.getRange(A)
+//  val r2 = params.getRange(B)
+//  for {
+//    aIndex <- r1
+//    bIndex <- r2
+//  } {
+//    val aVal   = aIndex.toDouble * params.getIncrement(A)
+//    val bVal   = bIndex.toDouble * params.getIncrement(B)
+//
+//    println(s"$aIndex $bIndex $aVal $bVal")
+//    poke(c.io.a.value, BigInt(aIndex))
+//    poke(c.io.b.value, BigInt(bIndex))
+//
+//    val expectedDouble = aVal + bVal
+//
+//    val result = peek(c.io.c.value)
+//    val doubleResult = FixedPointLiteral.toDouble(result, c.io.c.fractionalWidth)
+//
+//    println(s"poke(a,$aIndex($aVal)) + poke(b,$bIndex($bVal)) => $result($doubleResult) expected $expectedDouble   $params")
+//
+//
+//  }
+//}
 
 class AdderTestSpec extends FlatSpec with Matchers {
   "Adder" should "correctly add randomly generated numbers" in {
-    val params = AdderParams(FixedParams(3,1), FixedParams(3,1), FixedParams(4,1))
-    runPeekPokeTester(() => new Adder(params)){
+    val params = AdderParams(FixedParams(2,0), FixedParams(2,1), FixedParams(4,1))
+    runPeekPokeTester(() => new Adder(params), "firrtl"){
       (c,b) => new AdderTests(c,b)} should be (true)
   }
+
+//  "Params ranges" should "cover things well" in {
+//    val params = AdderParams(FixedParams(2,0), FixedParams(2,0), FixedParams(3,0))
+//
+//    val r1 = params.getRange(A)
+//    var r2 = params.getRange(B)
+//
+//    for {
+//      a <- r1
+//      b <- r2
+//    } {
+//      println(s"$a $b")
+//    }
+//  }
 }

@@ -10,7 +10,7 @@ class Adder3(iw: Int, fw: Int) extends Module {
     val a = (FixedPointNumber(fw, iw)).flip()
     val c = FixedPointNumber(iw, fw)
   }
-  val constant = FixedPointLiteral(3.0, fw)
+  val constant = 3.0.toFixed(fw)
 
 //  printf("Adder3: io.c.num %x constant %x io.a.num %x\n", io.c.value, constant.value, io.a.value)
 
@@ -27,6 +27,7 @@ class Adder3Tester(c: Adder3, backend: Option[Backend] = None) extends DspTester
 //    val expectedLiteral = FixedPointLiteral(expected, c.io.c.fractionalWidth)
     val expectedLiteral = expected.toFixed(c.io.c.fractionalWidth)
     println(s"Adder3Tester: a <= $pokeValue c => $result expected $expectedLiteral")
+    expect(c.io.c, expectedLiteral)
   }
 }
 class Adder3Spec extends ChiselFlatSpec {

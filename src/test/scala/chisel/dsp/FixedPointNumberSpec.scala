@@ -10,27 +10,27 @@ class FixedPointNumberSpec extends FlatSpec with Matchers {
   val MaxSIntWidth = 100
   behavior of "FixedPointNumber#matchFractionalWidth"
 
-  it should "return a and b of matching fractional widths, when b, fractional widthis less than a's" in {
+  it should "return a and b of matching fractional widths, when b, fractional width is less than a's" in {
     for {
       sIntWidth        <- 0 to MaxSIntWidth
       fractionalWidth1 <- 2 to MaxTestFractionalWidth
       fractionalWidth2 <- 1 to fractionalWidth1
     } {
       println(s"Testing $fractionalWidth1 and $fractionalWidth2")
-      val f1 = FixedPointNumber(fractionalWidth1)
-      val f2 = FixedPointNumber(fractionalWidth2)
+      val f1 = FixedPointNumber(fractionalWidth = fractionalWidth1)
+      val f2 = FixedPointNumber(fractionalWidth = fractionalWidth2)
 
-      val (a, b, aRange, bRange, fractionalWidth) = f1.matchFractionalWidths(f2)
+      val (a, b, aRange, bRange, newFractionalWidth) = f1.matchFractionalWidths(f2)
 
-      fractionalWidth should be(fractionalWidth1.max(fractionalWidth2))
+      newFractionalWidth should be (fractionalWidth1.max(fractionalWidth2))
 
       aRange should be (f1.range)
       bRange should be (f2.range.shift(fractionalWidth1 - fractionalWidth2))
 
       a.width.isInstanceOf[KnownWidth] should be(true)
-      a.width.asInstanceOf[KnownWidth].get should be(fractionalWidth)
+      a.width.asInstanceOf[KnownWidth].get should be(newFractionalWidth)
       b.width.isInstanceOf[KnownWidth] should be(true)
-      b.width.asInstanceOf[KnownWidth].get should be(fractionalWidth)
+      b.width.asInstanceOf[KnownWidth].get should be(newFractionalWidth)
     }
   }
 

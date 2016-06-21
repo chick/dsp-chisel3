@@ -6,16 +6,16 @@ import chisel._
 import chisel.util.{log2Up, Fill, Cat}
 
 object FixedPointNumber {
-  def apply(fractionalWidth: Int, integerWidth: Int = 0, direction: Direction = OUTPUT): FixedPointNumber = {
-    apply(fractionalWidth, integerWidth, NumberRange.fromWidth(fractionalWidth), direction)
+  def apply(integerWidth: Int = 0, fractionalWidth: Int = 0, direction: Direction = OUTPUT): FixedPointNumber = {
+    apply(integerWidth, fractionalWidth, NumberRange.fromWidth(fractionalWidth, integerWidth), direction)
   }
-  def apply(fractionalWidth: Int, integerWidth: Int, range: NumberRange, direction: Direction): FixedPointNumber = {
+  def apply(integerWidth: Int, fractionalWidth: Int, range: NumberRange, direction: Direction): FixedPointNumber = {
     val bitWidth = fractionalWidth + integerWidth
     direction match {
-      case OUTPUT => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(OUTPUT, bitWidth)))
-      case INPUT  => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(OUTPUT, bitWidth))).flip()
-      case NO_DIR => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(NO_DIR, bitWidth)))
-      case _      => new FixedPointNumber(fractionalWidth, integerWidth, range, Some(SInt(OUTPUT, bitWidth)))
+      case OUTPUT => new FixedPointNumber(integerWidth, fractionalWidth, range, Some(SInt(OUTPUT, bitWidth)))
+      case INPUT  => new FixedPointNumber(integerWidth, fractionalWidth, range, Some(SInt(OUTPUT, bitWidth))).flip()
+      case NO_DIR => new FixedPointNumber(integerWidth, fractionalWidth, range, Some(SInt(NO_DIR, bitWidth)))
+      case _      => new FixedPointNumber(integerWidth, fractionalWidth, range, Some(SInt(OUTPUT, bitWidth)))
     }
   }
 }
@@ -44,13 +44,13 @@ class FixedPointNumber(
   val isLiteral: Boolean = false
 
   def + (that: FixedPointNumber): FixedPointNumber = {
-    val (a, b, aRange, bRange, _) = this.matchFractionalWidths(that)
+    val (a, b, aRange, bRange, newFractionalWidth) = this.matchFractionalWidths(that)
 
     val newRange = aRange + bRange
 
-    val newIntWidth = this.integerWidth.max(that.integerWidth)
+    val newIntWidth = this.integerWidth.max(that.integerWidth) + 1
 
-    val result = Wire(new FixedPointNumber(newIntWidth, fractionalWidth, newRange))
+    val result = Wire(new FixedPointNumber(newIntWidth, newFractionalWidth, newRange))
 
     result.value := a + b
     result
@@ -83,7 +83,8 @@ class FixedPointNumber(
   def getRange(dummy: Int = 0): NumberRange = range
 
   def matchFractionalWidths(that: FixedPointNumber): (SInt, SInt, NumberRange, NumberRange, Int) = {
-    val newFractionalWidth = fractionalWidth.max(that.fractionalWidth)
+    println(s"mfw $this $that")
+    val newFractionalWidth   = fractionalWidth.max(that.fractionalWidth)
     val fractionalDifference = fractionalWidth - that.fractionalWidth
 
     if(fractionalDifference > 0) {
@@ -105,7 +106,7 @@ class FixedPointNumber(
         )
     }
     else {
-      (this.value, that.value, range, that.range, fractionalWidth)
+      (this.value, that.value, range, that.range, newFractionalWidth)
     }
   }
 
@@ -129,6 +130,9 @@ class FixedPointNumber(
 
   override def cloneType: this.type = {
     new FixedPointNumber(integerWidth, fractionalWidth, range, gen).asInstanceOf[this.type]
+  }
+  override def toString: String = {
+    s"Q$integerWidth:$fractionalWidth"
   }
 }
 
