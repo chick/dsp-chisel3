@@ -10,8 +10,13 @@ object Parameters {
     val (bigLow, bigHigh) = extremaOfSIntOfWidth(numberOfBits)
     new Parameters(numberOfBits, decimalPosition, bigHigh.toInt, bigLow.toInt)
   }
+
+  def apply(numberOfBits: Int, decimalPosition: Int, high: Int, low: Int): Parameters = {
+    new Parameters(numberOfBits: Int, decimalPosition: Int, high: Int, low: Int)
+  }
 }
-case class Parameters(numberOfBits: Int, decimalPosition: Int, high: Int, low: Int) {
+
+class Parameters(val numberOfBits: Int, val decimalPosition: Int, val high: Int, val low: Int) {
   def generateSInt: SInt = {
     SInt(width = numberOfBits)
   }
@@ -38,5 +43,8 @@ case class Parameters(numberOfBits: Int, decimalPosition: Int, high: Int, low: I
         this.high * that.low
       ).min
     )
+  }
+  override def toString: String = {
+    s"FPP(bits=$numberOfBits,decimal=$decimalPosition,hi=$high,lo=$low)"
   }
 }
