@@ -12,8 +12,8 @@ class FixedPointParametersSpec extends FlatSpec with Matchers {
   behavior of "addition"
 
   it should "create new parameters" in {
-    val firstParameter = Parameters(4, 1, -8, 7)
-    val secondParameter = Parameters(5, 2, -1, 15)
+    val firstParameter = Parameters(4, 1, 7, -8)
+    val secondParameter = Parameters(5, 2, 15, -1)
 
     val newParameter = firstParameter + secondParameter
 
@@ -28,9 +28,9 @@ class FixedPointParametersSpec extends FlatSpec with Matchers {
       bitSize1 <- 1 to 4
       bitSize2 <- bitSize1 to 4
     } {
-      var maxMax = Int.MinValue
+      var maxMax: BigInt = Int.MinValue
       var maxExample = ""
-      var minMin = Int.MaxValue
+      var minMin: BigInt = Int.MaxValue
       var minExample = ""
 
       val (bigLow1, bigHigh1) = extremaOfSIntOfWidth(bitSize1)
@@ -45,14 +45,14 @@ class FixedPointParametersSpec extends FlatSpec with Matchers {
 
       for {
         i <- low1 to high1
-        j <- i to high1
+        j <- i    to high1
       } {
         for {
           m <- low2 to high2
-          n <- m to high2
+          n <- m    to high2
         } {
-          val p1 = Parameters(bitSize1, 0, i, j)
-          val p2 = Parameters(bitSize1, 0, m, n)
+          val p1 = Parameters(bitSize1, 0, j, i)
+          val p2 = Parameters(bitSize2, 0, n, m)
 
           val p3 = p1 + p2
           // println(s"$p1 + $p2 = $p3")
@@ -82,9 +82,9 @@ class FixedPointParametersSpec extends FlatSpec with Matchers {
       bitSize1 <- 1 to 4
       bitSize2 <- bitSize1 to 4
     } {
-      var maxMax = Int.MinValue
+      var maxMax: BigInt = Int.MinValue
       var maxExample = ""
-      var minMin = Int.MaxValue
+      var minMin: BigInt = Int.MaxValue
       var minExample = ""
 
       val (bigLow1, bigHigh1) = extremaOfSIntOfWidth(bitSize1)
@@ -105,8 +105,8 @@ class FixedPointParametersSpec extends FlatSpec with Matchers {
           m <- low2 to high2
           n <- m to high2
         } {
-          val p1 = Parameters(bitSize1, 0, i, j)
-          val p2 = Parameters(bitSize1, 0, m, n)
+          val p1 = Parameters(bitSize1, 0, j, i)
+          val p2 = Parameters(bitSize2, 0, n, m)
 
           val p3 = p1 * p2
           // println(s"$p1 * $p2 = $p3")
@@ -126,6 +126,27 @@ class FixedPointParametersSpec extends FlatSpec with Matchers {
 
       fullResult.low should be(minMin)
       fullResult.high should be(maxMax)
+    }
+  }
+
+  behavior of "bits adjusted by range"
+
+  it should "adjust downard if less are necessary" in {
+    val p = Parameters(4, 0, 2, 0)
+    p.numberOfBits should be (3)
+  }
+
+  behavior of "constructor"
+
+  it should "not allow illegal argumemt combinations" in {
+    intercept[DspException] {
+      Parameters(4, 0, 0, 2) // high is lower than low
+    }
+    intercept[DspException] {
+      Parameters(4, 0, 16, 0) // high won't fit in bits
+    }
+    intercept[DspException] {
+      Parameters(4, 0, 1, -20) // low won't fit in bits
     }
   }
 }

@@ -3,20 +3,43 @@
 package chisel.dsp.FixedPoint
 
 import chisel.core.SInt
+import chisel.dsp.DspException
 import firrtl_interpreter._
 
 object Parameters {
   def apply(numberOfBits: Int, decimalPosition: Int): Parameters = {
     val (bigLow, bigHigh) = extremaOfSIntOfWidth(numberOfBits)
-    new Parameters(numberOfBits, decimalPosition, bigHigh.toInt, bigLow.toInt)
+    Parameters(numberOfBits, decimalPosition, bigHigh.toInt, bigLow.toInt)
   }
 
-  def apply(numberOfBits: Int, decimalPosition: Int, high: Int, low: Int): Parameters = {
-    new Parameters(numberOfBits: Int, decimalPosition: Int, high: Int, low: Int)
+  /**
+    * Created a parameter object, possibly adjusting the number of bits required downward
+    * if hi and low require less than requested
+    *
+    * @param numberOfBits     bits suggested
+    * @param decimalPosition  position of decimal point
+    * @param high             biggest number this could be
+    * @param low              smallest number this could be
+    * @return
+    */
+  def apply(numberOfBits: Int, decimalPosition: Int, high: BigInt, low: BigInt): Parameters = {
+    val adjustedBits = numberOfBits.min(requiredBitsForSInt(low).max(requiredBitsForSInt(high)))
+
+    new Parameters(adjustedBits: Int, decimalPosition: Int, high: BigInt, low: BigInt)
   }
 }
 
-class Parameters(val numberOfBits: Int, val decimalPosition: Int, val high: Int, val low: Int) {
+class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val high: BigInt, val low: BigInt) {
+  if(low > high) {
+    throw new DspException(s"Error high must be greater than low $toString")
+  }
+  val (lowest, highest) = extremaOfSIntOfWidth(numberOfBits)
+  if(low < lowest) {
+    throw new DspException(s"Error low to small for numberOfBits $toString lowest possible is $lowest")
+  }
+  if(high > highest) {
+    throw new DspException(s"Error high to small for numberOfBits $toString highest possible is $highest")
+  }
   def generateSInt: SInt = {
     SInt(width = numberOfBits)
   }
