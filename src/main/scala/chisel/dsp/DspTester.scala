@@ -2,8 +2,8 @@
 
 package chisel.dsp
 
-import chisel.iotesters.{PeekPokeTester, Backend}
-import chisel.core.Module
+import chisel3.iotesters.{PeekPokeTester, Backend}
+import chisel3.core.Module
 
 class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends PeekPokeTester(c, _backend = _backend){
   def poke(port: FixedPointNumber, number: Double): Unit = {

@@ -2,9 +2,9 @@
 
 package chisel.dsp
 
-import chisel.core.OUTPUT
-import chisel.{Module, Bundle}
-import chisel.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
+import chisel3.core.OUTPUT
+import chisel3.{Module, Bundle}
+import chisel3.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
 
 import org.scalatest.{FlatSpec, Matchers}
 

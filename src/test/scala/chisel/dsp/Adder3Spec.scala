@@ -2,8 +2,8 @@
 
 package chisel.dsp
 
-import chisel.iotesters.{runPeekPokeTester, Backend, PeekPokeTester, ChiselFlatSpec}
-import chisel._
+import chisel3.iotesters.{runPeekPokeTester, Backend, PeekPokeTester, ChiselFlatSpec}
+import chisel3._
 
 class Adder3(iw: Int, fw: Int) extends Module {
   val io = new Bundle {

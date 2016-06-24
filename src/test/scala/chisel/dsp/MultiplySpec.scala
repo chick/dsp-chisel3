@@ -2,8 +2,8 @@
 
 package chisel.dsp
 
-import chisel._
-import chisel.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
+import chisel3._
+import chisel3.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
 import org.scalatest.{Matchers, FlatSpec}
 
 class Multiply(integerWidth: Int, fractionalWidth: Int, adderSize: Int) extends Module {

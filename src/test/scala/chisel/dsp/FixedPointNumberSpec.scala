@@ -2,7 +2,7 @@
 
 package chisel.dsp
 
-import chisel.internal.firrtl.KnownWidth
+import chisel3.internal.firrtl.KnownWidth
 import org.scalatest.{Matchers, FlatSpec}
 
 class FixedPointNumberSpec extends FlatSpec with Matchers {

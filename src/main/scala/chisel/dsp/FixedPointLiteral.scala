@@ -2,8 +2,8 @@
 
 package chisel.dsp
 
-import chisel._
-import chisel.util.log2Up
+import chisel3._
+import chisel3.util.log2Up
 
 object FixedPointLiteral {
   def requiredBitsForSInt(num: BigInt): Int = {

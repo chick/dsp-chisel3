@@ -2,8 +2,8 @@
 
 package chisel.dsp
 
-import chisel._
-import chisel.util.{log2Up, Fill, Cat}
+import chisel3._
+import chisel3.util.{log2Up, Fill, Cat}
 
 object FixedPointNumber {
   def apply(integerWidth: Int = 0, fractionalWidth: Int = 0, direction: Direction = OUTPUT): FixedPointNumber = {

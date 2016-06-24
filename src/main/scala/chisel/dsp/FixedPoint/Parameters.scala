@@ -2,7 +2,7 @@
 
 package chisel.dsp.FixedPoint
 
-import chisel.core.SInt
+import chisel3.core.SInt
 import chisel.dsp.DspException
 import firrtl_interpreter._
 
@@ -25,7 +25,9 @@ object Parameters {
   def apply(numberOfBits: Int, decimalPosition: Int, high: BigInt, low: BigInt): Parameters = {
     val adjustedBits = numberOfBits.min(requiredBitsForSInt(low).max(requiredBitsForSInt(high)))
 
-    new Parameters(adjustedBits: Int, decimalPosition: Int, high: BigInt, low: BigInt)
+    val result = new Parameters(adjustedBits: Int, decimalPosition: Int, high: BigInt, low: BigInt)
+
+    result
   }
 }
 
@@ -69,5 +71,12 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
   }
   override def toString: String = {
     s"FPP(bits=$numberOfBits,decimal=$decimalPosition,hi=$high,lo=$low)"
+  }
+  def asQmn: String = {
+    s"Q$numberOfBits.$decimalPosition"
+  }
+  def asQmnWithRange: String = {
+    val (bigLow, bigHigh) = extremaOfSIntOfWidth(numberOfBits)
+    s"Q$numberOfBits.$decimalPosition"
   }
 }

@@ -2,9 +2,9 @@
 
 package chisel.dsp
 
-import chisel.iotesters.{runPeekPokeTester, Backend}
-import chisel._
-import chisel.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
+import chisel3.iotesters.{runPeekPokeTester, Backend}
+import chisel3._
+import chisel3.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
 import firrtl_interpreter._
 import org.scalatest.{Matchers, FlatSpec}
 

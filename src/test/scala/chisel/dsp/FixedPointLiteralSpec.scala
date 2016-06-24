@@ -2,7 +2,7 @@
 
 package chisel.dsp
 
-import chisel.util.{log2Ceil, log2Up}
+import chisel3.util.{log2Ceil, log2Up}
 
 import org.scalatest.{FlatSpec, Matchers}
 

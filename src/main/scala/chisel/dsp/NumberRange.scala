@@ -2,9 +2,9 @@
 
 package chisel.dsp
 
-import chisel.internal.firrtl.Width
+import chisel3.internal.firrtl.Width
 import chisel._
-import chisel.util._
+import chisel3.util._
 
 trait NumberRange {
   def width: Width

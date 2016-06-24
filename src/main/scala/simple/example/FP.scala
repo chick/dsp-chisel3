@@ -2,8 +2,8 @@
 
 package simple.example
 
-import chisel._
-import chisel.util.{log2Up, Fill, Cat}
+import chisel3._
+import chisel3.util.{log2Up, Fill, Cat}
 
 
 

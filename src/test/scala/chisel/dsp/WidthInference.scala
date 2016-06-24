@@ -2,10 +2,10 @@
 
 package chisel.dsp
 
-import chisel.iotesters.runPeekPokeTester
-import chisel.iotesters.Backend
-import chisel._
-import chisel.core.{Bundle, Module, OUTPUT}
+import chisel3.iotesters.runPeekPokeTester
+import chisel3.iotesters.Backend
+import chisel3._
+import chisel3.core.{Bundle, Module, OUTPUT}
 import org.scalatest.{Matchers, FlatSpec}
 
 // scalastyl e:off magic.number
