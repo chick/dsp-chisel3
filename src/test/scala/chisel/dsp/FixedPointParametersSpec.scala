@@ -2,7 +2,7 @@
 
 package chisel.dsp
 
-import chisel.dsp.FixedPoint.Parameters
+import chisel.dsp.fixedpoint.Parameters
 import org.scalatest.{Matchers, FlatSpec}
 
 import firrtl_interpreter._

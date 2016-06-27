@@ -1,4 +1,6 @@
-package chisel
+package chisel.dsp
+
+import chisel.dsp.fixedpoint._
 
 package object dsp {
   implicit class fromDoubleToFixedPointLiteral(val x: Double) extends AnyVal {

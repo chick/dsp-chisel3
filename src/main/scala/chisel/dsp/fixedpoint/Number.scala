@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package chisel.dsp.FixedPoint
+package chisel.dsp.fixedpoint
 
 import chisel3._
 import chisel.dsp.{Qnm, NumberRange}

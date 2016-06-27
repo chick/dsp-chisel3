@@ -7,6 +7,7 @@ import chisel3._
 import chisel3.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
 import firrtl_interpreter._
 import org.scalatest.{Matchers, FlatSpec}
+import chisel.dsp.fixedpoint._
 
 /**
   * Adds arbitrarily parameterized fixeds together
@@ -31,9 +32,9 @@ object FixedParams {
 case class AdderParams(a: FixedParams, b: FixedParams, c: FixedParams) {
   val which = Array(a, b, c)
 
-  def makeIO(i: AdderIndex, direction: Direction): FixedPointNumber = {
+  def makeIO(i: AdderIndex, direction: Direction): Number = {
     val param = which(i.n)
-    FixedPointNumber(param.i, param.f, NumberRange(param.l, param.h), direction)
+    Number(param.i + param.f, param.f, direction)
   }
   def getRange(i: AdderIndex): Array[Int] = {
     val param = which(i.n)
@@ -64,7 +65,8 @@ class Adder(val params: AdderParams) extends Module {
     val c = params.makeIO(C, OUTPUT)
   }
   io.c := io.a + io.b
-  printf(s"a %d.S<${io.a.width.get}> b %d.S<${io.b.width.get}> c %d.S<${io.c.width.get}>\n", io.a.value.asSInt() , io.b.value.asSInt() , io.c.value.asSInt() )
+  printf(s"a %d.S<${io.a.width.get}> b %d.S<${io.b.width.get}> c %d.S<${io.c.width.get}>\n",
+    io.a.value.asSInt() , io.b.value.asSInt() , io.c.value.asSInt() )
 }
 
 /**
@@ -83,14 +85,14 @@ class AdderTests(c: Adder, backend: Option[Backend] = None) extends DspTester(c,
     bIndex <- r2
   } {
     println(s"Adder begin $aIndex $bIndex")
-    val aInput   = (aIndex.toDouble * params.getIncrement(A)).toFixed(params.getFractionalWidth(A))
-    val bInput   = (bIndex.toDouble * params.getIncrement(B)).toFixed(params.getFractionalWidth(B))
+    val aInput   = (aIndex.toDouble * params.getIncrement(A)).FP(params.getFractionalWidth(A))
+    val bInput   = (bIndex.toDouble * params.getIncrement(B)).FP(params.getFractionalWidth(B))
 
     println(s"$aIndex $bIndex $aInput $bInput")
     poke(c.io.a, aInput)
     poke(c.io.b, bInput)
 
-    val expectedDouble = FixedPointLiteral(aInput.toDouble + bInput.toDouble, params.getFractionalWidth(C))
+    val expectedDouble = Literal(aInput.toDouble + bInput.toDouble, c.io.c.parameters.decimalPosition)
 
     val result = peek(c.io.c)
     println(s"addertests: $aInput + $bInput => $result expected $expectedDouble")

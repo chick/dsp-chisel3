@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package chisel.dsp.FixedPoint
+package chisel.dsp.fixedpoint
 
 import chisel3._
 import chisel3.util.{Fill, Cat}
@@ -15,7 +15,7 @@ case class BitsResolver(a: Number, b: Number) {
 
   def addableSInts: (SInt, SInt) = {
     if(aParameters.decimalPosition < bParameters.decimalPosition) {
-      (a.value, padRight(b, fractionalDifference))
+      (a.value, padRight(b, fractionalDifference.abs))
     }
     else {
       (padRight(a, fractionalDifference.abs), b.value)
@@ -23,6 +23,7 @@ case class BitsResolver(a: Number, b: Number) {
   }
 
   def padRight(number: Number, numberOfBits: Int): SInt = {
-    Cat(number.value, Fill(fractionalDifference, 0.U)).asSInt()
+//    Cat(number.value, Fill(fractionalDifference, 0.U)).asSInt()
+    Cat(number.value, Fill(fractionalDifference.abs, UInt(0, width = 1))).asSInt()
   }
 }
