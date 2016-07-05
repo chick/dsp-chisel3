@@ -46,12 +46,22 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
     SInt(width = numberOfBits)
   }
   def + (that: Parameters): Parameters = {
+    val (newHigh, newLow) = extremesOfOperation(that, plus)
+    val bitsRequired = requiredBitsForSInt(newHigh).max(requiredBitsForSInt(newLow))
+
     Parameters(
-      this.numberOfBits.max(that.numberOfBits) + 1,
+      bitsRequired,
       this.decimalPosition.max(that.decimalPosition),
-      this.high + that.high,
-      this.low + that.low
+      newHigh,
+      newLow
     )
+
+//    Parameters(
+//      this.numberOfBits.max(that.numberOfBits) + 1,
+//      this.decimalPosition.max(that.decimalPosition),
+//      this.high + that.high,
+//      this.low + that.low
+//    )
   }
   def * (that: Parameters): Parameters = {
     Parameters(
@@ -69,6 +79,17 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
       ).min
     )
   }
+
+  def extremesOfOperation(that: Parameters, op: (BigInt, BigInt) => BigInt): (BigInt, BigInt) = {
+    (
+      op(this.high, that.high).max(op(this.high, that.low)).max(op(this.low, that.high)).max(op(this.low, that.low)),
+      op(this.high, that.high).min(op(this.high, that.low)).min(op(this.low, that.high)).min(op(this.low, that.low))
+    )
+  }
+
+  val plus = (a: BigInt, b: BigInt) => a + b
+  val multiply = (a: BigInt, b: BigInt) => a * b
+
   override def toString: String = {
     s"FPP(bits=$numberOfBits,decimal=$decimalPosition,hi=$high,lo=$low)"
   }
