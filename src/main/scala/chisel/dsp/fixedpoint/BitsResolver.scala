@@ -17,13 +17,17 @@ case class BitsResolver(a: Number, b: Number) {
     if(aParameters.decimalPosition < bParameters.decimalPosition) {
       (a.value, padRight(b, fractionalDifference.abs))
     }
-    else {
+    else if(aParameters.decimalPosition > bParameters.decimalPosition) {
       (padRight(a, fractionalDifference.abs), b.value)
+    }
+    else {
+      (a.value, b.value)
     }
   }
 
   def padRight(number: Number, numberOfBits: Int): SInt = {
 //    Cat(number.value, Fill(fractionalDifference, 0.U)).asSInt()
-    Cat(number.value, Fill(fractionalDifference.abs, UInt(0, width = 1))).asSInt()
+    val filled = Wire(Fill(fractionalDifference.abs, UInt(0, width = 1)))
+    Cat(number.value, filled).asSInt()
   }
 }
