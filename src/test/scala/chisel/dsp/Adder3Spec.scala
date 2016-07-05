@@ -8,12 +8,12 @@ import chisel.dsp.fixedpoint._
 
 class Adder3(iw: Int, fw: Int) extends Module {
   val io = new Bundle {
-    val a = (Number(fw, iw, INPUT)).flip()
+    val a = Number(iw, fw, INPUT)
     val c = Number(iw, fw, OUTPUT)
   }
   val constant = 3.0.FP(fw)
 
-//  printf("Adder3: io.c.num %x constant %x io.a.num %x\n", io.c.value, constant.value, io.a.value)
+  printf("Adder3: io.c.num %x constant %x io.a.num %x\n", io.c.value, constant.value, io.a.value)
 
   io.c := io.a + constant
 }
@@ -32,11 +32,11 @@ class Adder3Tester(c: Adder3, backend: Option[Backend] = None) extends DspTester
   }
 }
 class Adder3Spec extends ChiselFlatSpec {
-  val intWidth  = 8
-  val fracWidth = 4
+  val numberOfBits  = 8
+  val decimalPosition = 4
 
   "Adder3" should "should add 3.0 to a number" in {
-    runPeekPokeTester(() => new Adder3(intWidth, fracWidth)){
+    runPeekPokeTester(() => new Adder3(numberOfBits, decimalPosition)){
       (c,b) => new Adder3Tester(c, b)} should be (true)
   }
 }
