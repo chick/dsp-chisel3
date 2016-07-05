@@ -5,26 +5,26 @@ package chisel.dsp
 import chisel3.core.OUTPUT
 import chisel3.{Module, Bundle}
 import chisel3.iotesters.{runPeekPokeTester, PeekPokeTester, Backend}
-
+import chisel.dsp.fixedpoint._
 import org.scalatest.{FlatSpec, Matchers}
 
 class Identity(iw: Int, fw: Int) extends Module {
   val io = new Bundle {
-    val a = FixedPointNumber(iw, fw, OUTPUT).flip()
-    val c = FixedPointNumber(iw, fw, OUTPUT)
+    val a = Number(iw, fw, OUTPUT).flip()
+    val c = Number(iw, fw, OUTPUT)
   }
   io.c := io.a
 }
 
 class IdentityTests(c: Identity, backend: Option[Backend] = None) extends DspTester(c, _backend = backend) {
-  var input = FixedPointLiteral(1.0, c.io.a.fractionalWidth)
+  var input = Literal(1.0, c.io.a.parameters.decimalPosition)
   poke(c.io.a, input)
   var output = peek(c.io.c)
   println(s"identity poke $input")
   println(s"identity peek $output")
 
 
-  input = FixedPointLiteral(-1.0, c.io.a.fractionalWidth)
+  input = Literal(-1.0, c.io.a.parameters.decimalPosition)
   poke(c.io.a, input)
   output = peek(c.io.c)
   println(s"identity poke $input")

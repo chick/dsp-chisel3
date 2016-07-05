@@ -10,7 +10,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import chisel.dsp.fixedpoint._
 
 /**
-  * Adds arbitrarily parameterized fixeds together
+  * Adds arbitrarily parameterized fixed numbers together
   */
 
 trait AdderIndex {
@@ -104,32 +104,6 @@ class AdderTests(c: Adder, backend: Option[Backend] = None) extends DspTester(c,
     expect(c.io.c, expectedDouble)
   }
 }
-//class AdderTests(c: Adder, backend: Option[Backend] = None) extends DspTester(c, _backend = backend) {
-//  val params = c.params
-//
-//  val r1 = params.getRange(A)
-//  val r2 = params.getRange(B)
-//  for {
-//    aIndex <- r1
-//    bIndex <- r2
-//  } {
-//    val aVal   = aIndex.toDouble * params.getIncrement(A)
-//    val bVal   = bIndex.toDouble * params.getIncrement(B)
-//
-//    println(s"$aIndex $bIndex $aVal $bVal")
-//    poke(c.io.a.value, BigInt(aIndex))
-//    poke(c.io.b.value, BigInt(bIndex))
-//
-//    val expectedDouble = aVal + bVal
-//
-//    val result = peek(c.io.c.value)
-//    val doubleResult = FixedPointLiteral.toDouble(result, c.io.c.fractionalWidth)
-//
-//    println(s"poke(a,$aIndex($aVal)) + poke(b,$bIndex($bVal)) => $result($doubleResult) expected $expectedDouble   $params")
-//
-//
-//  }
-//}
 
 class AdderTestSpec extends FlatSpec with Matchers {
   "Adder" should "correctly add randomly generated numbers" in {

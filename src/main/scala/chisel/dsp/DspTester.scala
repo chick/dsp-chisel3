@@ -7,7 +7,9 @@ import chisel3.core.Module
 
 import chisel.dsp.fixedpoint._
 
-class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends PeekPokeTester(c, _backend = _backend){
+import scala.collection.mutable.ArrayBuffer
+
+class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends PeekPokeTester(c, _backend = _backend) {
   def poke(port: FixedPointNumber, number: Double): Unit = {
     poke(port.value, FixedPointLiteral(number, port.fractionalWidth).literalValue)
   }
@@ -16,7 +18,7 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
     poke(port.value, fixedPointLiteral.literalValue)
   }
 
-  def poke(port:Number, number: Double): Unit = {
+  def poke(port: Number, number: Double): Unit = {
     poke(port.value, FixedPointLiteral(number, port.parameters.decimalPosition).literalValue)
   }
 
@@ -29,17 +31,12 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
     Literal(sInt, port.parameters.decimalPosition)
   }
 
-  def peek(port: FixedPointNumber): FixedPointLiteral = {
+  def expect(port: Number, expected: FixedPointLiteral): Unit = {
     val sInt = peek(port.value)
-    FixedPointLiteral(sInt, port.fractionalWidth)
-  }
+    val result = Literal(sInt, port.parameters.decimalPosition)
+    //    println(s"XXXXX ${result.literalValue} != ${expected.literalValue}")
 
-  def expect(port: FixedPointNumber, expected: FixedPointLiteral): Unit = {
-    val sInt = peek(port.value)
-    val result = FixedPointLiteral(sInt, port.fractionalWidth)
-//    println(s"XXXXX ${result.literalValue} != ${expected.literalValue}")
-
-    if(result.literalValue != expected.literalValue) {
+    if (result.literalValue != expected.literalValue) {
       println(s"Error: expect(${port}, $expected) got $result instead")
       expect(port.value, expected.literalValue)
     }
@@ -47,16 +44,26 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
 
   def expect(port: Number, expected: Literal): Unit = {
     val sInt = peek(port.value)
-    val result = FixedPointLiteral(sInt, port.parameters.decimalPosition)
-//    println(s"XXXXX ${result.literalValue} != ${expected.literalValue}")
+    val result = Literal(sInt, port.parameters.decimalPosition)
+    //    println(s"XXXXX ${result.literalValue} != ${expected.literalValue}")
 
-    if(result.literalValue != expected.literalValue) {
+    if (result.literalValue != expected.literalValue) {
       println(s"Error: expect(${port}, $expected) got $result instead")
       expect(port.value, expected.literalValue)
     }
   }
+}
 
-//  def step(n: Int): Unit = {
-//    super.step(n)
-//  }
+object DspTester {
+  case class DoubleRange(start: Double, end: Double, step: Double) extends Iterator[Double] {
+    var currentValue = start
+
+    override def hasNext: Boolean = currentValue < end
+
+    override def next(): Double = {
+      val returnValue = currentValue
+      currentValue += step
+      returnValue
+    }
+  }
 }
