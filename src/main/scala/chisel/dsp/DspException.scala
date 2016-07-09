@@ -2,6 +2,6 @@
 
 package chisel.dsp
 
-class DspException(message: String) extends Exception(message) {
+case class DspException(message: String) extends Exception(message) {
 
 }

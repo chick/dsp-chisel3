@@ -6,6 +6,8 @@ import chisel3._
 import firrtl_interpreter._
 
 object Literal {
+  implicit val defaultBehavior = Behavior(Saturate, Truncate, Some(16), Some(-16), Some(32))
+
   def toBigInt(x: Double, fractionalWidth: Int): BigInt = {
     val multiplier = math.pow(2,fractionalWidth)
     val result = BigInt(math.round(x * multiplier))
@@ -41,7 +43,9 @@ object Literal {
 
 }
 
-class Literal(val literalValue:  BigInt, parameters: Parameters) extends Number(parameters) {
+class Literal(val literalValue:  BigInt, parameters: Parameters)(implicit behavior: Behavior)
+  extends Number(parameters)(behavior) {
+
   override val isLiteral: Boolean = true
 
   def unsignedBinaryString: String = {

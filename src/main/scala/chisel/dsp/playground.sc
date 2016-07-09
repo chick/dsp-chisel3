@@ -1,1 +1,5 @@
-for(i <- 10 to 0 by -1 ) yield i
+def p(implicit i: Int) = println(i)
+
+implicit val v = 2
+
+p

@@ -11,7 +11,7 @@ class Adder3(iw: Int, fw: Int) extends Module {
     val a = Number(iw, fw, INPUT)
     val c = Number(iw, fw, OUTPUT)
   }
-  val constant = 3.0.FP(fw)
+  val constant = 3.0 FP(fw)
 
   printf("Adder3: io.c.num %x constant %x io.a.num %x\n", io.c.value, constant.value, io.a.value)
 

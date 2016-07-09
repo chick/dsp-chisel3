@@ -5,10 +5,13 @@ package chisel.dsp.fixedpoint
 import chisel3._
 import chisel.dsp.{Qnm, NumberRange}
 import chisel3.util.{log2Up, Fill, Cat}
+import chisel.dsp._
 
 object Number {
+//  implicit val defaultBehavior = Behavior(Saturate, Truncate, Some(16), Some(-16), Some(32))
 
-  def apply(numberOfBits: Int, decimalPosition: Int, direction: Direction): Number = {
+  def apply(numberOfBits: Int, decimalPosition: Int, direction: Direction)
+           (implicit behavior: Behavior): Number = {
     val bitWidth = decimalPosition + numberOfBits
     direction match {
       case OUTPUT => new Number(Parameters(numberOfBits, decimalPosition))
@@ -27,10 +30,13 @@ object Number {
   * A fixed point number has a minimum and maximum value, these are used in to possilby limit bit
   * expansion below the default behavior of various arithmetic and logic operations.
   *
-  * @param initialParameters    informatioin about this Number
+  * @param initialParameters    information about this Number
   */
-class Number(initialParameters: Parameters) extends Bundle with Qnm {
+class Number(initialParameters: Parameters)(implicit behavior: Behavior) extends Bundle with Qnm {
   var parameters = initialParameters
+
+  dsp.dspAssertion(behavior.testBits(parameters.numberOfBits),
+    s"Number: $this numberOfBits exceeds scoped maximum of ${behavior.numberOfBitsMaximum}")
 
   val value = SInt(OUTPUT, width = parameters.numberOfBits)
   val isLiteral: Boolean = false

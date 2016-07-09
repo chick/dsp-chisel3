@@ -9,7 +9,7 @@ import firrtl_interpreter._
 object Parameters {
   def apply(numberOfBits: Int, decimalPosition: Int): Parameters = {
     val (bigLow, bigHigh) = extremaOfSIntOfWidth(numberOfBits)
-    Parameters(numberOfBits, decimalPosition, bigHigh.toInt, bigLow.toInt)
+    Parameters(numberOfBits, decimalPosition, bigHigh, bigLow)
   }
 
   /**
@@ -42,6 +42,12 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
   if(high > highest) {
     throw new DspException(s"Error high to small for numberOfBits $toString highest possible is $highest")
   }
+
+  // if the decimal position is less than zero this further restricts the possible low and high values
+  if(decimalPosition < 0) {
+    val mask = BigInt("1" * decimalPosition, 2)
+  }
+
   def generateSInt: SInt = {
     SInt(width = numberOfBits)
   }
@@ -55,13 +61,6 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
       newHigh,
       newLow
     )
-
-//    Parameters(
-//      this.numberOfBits.max(that.numberOfBits) + 1,
-//      this.decimalPosition.max(that.decimalPosition),
-//      this.high + that.high,
-//      this.low + that.low
-//    )
   }
   def * (that: Parameters): Parameters = {
     Parameters(

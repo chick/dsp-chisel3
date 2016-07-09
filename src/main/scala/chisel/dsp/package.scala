@@ -1,6 +1,6 @@
-package chisel.dsp
+// See LICENSE for license details.
 
-import chisel.dsp.fixedpoint._
+package chisel.dsp
 
 package object dsp {
   implicit class fromDoubleToFixedPointLiteral(val x: Double) extends AnyVal {
@@ -11,5 +11,11 @@ package object dsp {
   }
   implicit class fromIntToFixedPointLiteral(val x: Int) extends AnyVal {
     def toFixed(fractionalWidth: Int = 0): FixedPointLiteral = FixedPointLiteral(BigInt(x), fractionalWidth)
+  }
+
+  def dspAssertion(condition: => Boolean, message: => String): Unit = {
+    if(!condition) {
+      throw DspException(message)
+    }
   }
 }
