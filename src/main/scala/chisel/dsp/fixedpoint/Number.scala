@@ -10,14 +10,14 @@ import chisel.dsp._
 object Number {
 //  implicit val defaultBehavior = Behavior(Saturate, Truncate, Some(16), Some(-16), Some(32))
 
-  def apply(numberOfBits: Int, decimalPosition: Int, direction: Direction)
+  def apply(numberOfBits: Int, binaryPoint: Int, direction: Direction)
            (implicit behavior: Behavior): Number = {
-    val bitWidth = decimalPosition + numberOfBits
+    val bitWidth = binaryPoint + numberOfBits
     direction match {
-      case OUTPUT => new Number(Parameters(numberOfBits, decimalPosition))
-      case INPUT  => new Number(Parameters(numberOfBits, decimalPosition)).flip()
-      case NO_DIR => new Number(Parameters(numberOfBits, decimalPosition))
-      case _      => new Number(Parameters(numberOfBits, decimalPosition))
+      case OUTPUT => new Number(Parameters(numberOfBits, binaryPoint))
+      case INPUT  => new Number(Parameters(numberOfBits, binaryPoint)).flip()
+      case NO_DIR => new Number(Parameters(numberOfBits, binaryPoint))
+      case _      => new Number(Parameters(numberOfBits, binaryPoint))
     }
   }
 }
@@ -35,8 +35,7 @@ object Number {
 class Number(initialParameters: Parameters)(implicit behavior: Behavior) extends Bundle with Qnm {
   var parameters = initialParameters
 
-  dsp.dspAssertion(behavior.testBits(parameters.numberOfBits),
-    s"Number: $this numberOfBits exceeds scoped maximum of ${behavior.numberOfBitsMaximum}")
+  behavior.assertConforming(this)
 
   val value = SInt(OUTPUT, width = parameters.numberOfBits)
   val isLiteral: Boolean = false
@@ -78,7 +77,7 @@ class Number(initialParameters: Parameters)(implicit behavior: Behavior) extends
     new Number(parameters).asInstanceOf[this.type]
   }
   override def toString: String = {
-    s"Q${parameters.numberOfBits}.${parameters.decimalPosition}"
+    parameters.asFP
   }
 }
 

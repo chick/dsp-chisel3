@@ -11,7 +11,7 @@ object Literal {
   def toBigInt(x: Double, fractionalWidth: Int): BigInt = {
     val multiplier = math.pow(2,fractionalWidth)
     val result = BigInt(math.round(x * multiplier))
-    println(s"toBigInt:x = $x, width = $fractionalWidth multiplier $multiplier result $result")
+//    println(s"toBigInt:x = $x, width = $fractionalWidth multiplier $multiplier result $result")
     result
   }
 
@@ -56,10 +56,11 @@ class Literal(val literalValue:  BigInt, parameters: Parameters)(implicit behavi
     new Literal(literalValue, parameters).asInstanceOf[this.type]
   }
   override def toString: String = {
-    f"${Literal.toDouble(literalValue, parameters.decimalPosition)}" +
-      f"(b$unsignedBinaryString):Q${parameters.numberOfBits}:${parameters.decimalPosition}"
+    f"${Literal.toDouble(literalValue, parameters.binaryPoint)}" +
+      f"(b$unsignedBinaryString)" +
+      super.toString
   }
   def toDouble: Double = {
-    Literal.toDouble(literalValue, parameters.decimalPosition)
+    Literal.toDouble(literalValue, parameters.binaryPoint)
   }
 }

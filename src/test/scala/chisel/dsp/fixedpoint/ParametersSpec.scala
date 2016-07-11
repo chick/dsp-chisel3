@@ -2,10 +2,10 @@
 
 package chisel.dsp.fixedpoint
 
+import chisel.dsp._
+
 import chisel.dsp.DspException
 import org.scalatest.{Matchers, FlatSpec}
-
-import firrtl_interpreter._
 
 //scalastyle:off magic.number
 
@@ -43,11 +43,11 @@ class ParametersSpec extends FlatSpec with Matchers {
       val p3 = p1 + p2
 
       assert(p3.numberOfBits === nb1.max(nb2)+1, s"number of bits wrong for $p1 $p2")
-      assert(p3.decimalPosition === dp1.max(dp2), s"decimal position wrong for $p1 $p2")
+      assert(p3.binaryPoint === dp1.max(dp2), s"decimal position wrong for $p1 $p2")
     }
   }
 
-  it should "have ranges limit the numberOfBits in a sum" in {
+  it should "correct values when ranges are not used numberOfBits in a sum" in {
     val p1 = Parameters(8, 1, 2, 1)
     val p2 = Parameters(12, 1, 2, 1)
 
@@ -64,16 +64,35 @@ class ParametersSpec extends FlatSpec with Matchers {
       val t1 = Parameters(nb1, dp1)
       val t2 = Parameters(nb2, dp2)
 
+      // println(s"parameter addition of $t1 $t2")
 
-
-
-      // println(s"parameter addition of $p1 $p2")
-
-      val p3 = p1 + p2
+      val p3 = t1 + t2
 
       assert(p3.numberOfBits === nb1.max(nb2)+1, s"number of bits wrong for $p1 $p2")
-      assert(p3.decimalPosition === dp1.max(dp2), s"decimal position wrong for $p1 $p2")
+      assert(p3.binaryPoint === dp1.max(dp2), s"decimal position wrong for $p1 $p2")
     }
+  }
+
+  it should "ranges should change the numberOfBits in a sum" in {
+    var p1 = Parameters(8, 1, 2, 1)
+    var p2 = Parameters(12, 4, 2, 1)
+
+    var p3 = p1 + p2
+
+    println(s"$p1 + $p2 => $p3")
+
+    assert(p3.numberOfBits === 4, s"number of bits wrong for $p1 $p2")
+    assert(p3.binaryPoint === 4, s"number of bits wrong for $p1 $p2")
+
+    p1 = Parameters(8, 1, 1, -8)
+    p2 = Parameters(12, 4, 0, -7)
+
+    p3 = p1 + p2
+
+    println(s"$p1 + $p2 => $p3")
+
+    assert(p3.numberOfBits === 5, s"number of bits wrong for $p1 $p2")
+    assert(p3.binaryPoint === 4, s"number of bits wrong for $p1 $p2")
   }
 
   it should "support negative decimal positions" in {

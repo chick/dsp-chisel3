@@ -2,6 +2,8 @@
 
 package chisel.dsp.fixedpoint
 
+import chisel.dsp.{DspException, dsp}
+
 abstract class OverflowType
 case object Saturate extends OverflowType
 case object Wrap extends OverflowType
@@ -15,14 +17,32 @@ case object NoTrim extends TrimType
 case class Behavior(
                      overflow: OverflowType,
                      trimType: TrimType,
-                     decimalPositionMaximum: Option[Int],
-                     decimalPositionMinimum: Option[Int],
+                     binaryPointMaximum: Option[Int],
+                     binaryPointMinimum: Option[Int],
                      numberOfBitsMaximum:    Option[Int]
                    ) {
   def testBits(numberOfBits: Int): Boolean = {
     numberOfBitsMaximum match {
       case Some(max) => numberOfBits <= max
       case _ => true
+    }
+  }
+
+  def assertConforming(number: Number): Unit = {
+    numberOfBitsMaximum.foreach { max =>
+      if(number.parameters.numberOfBits > max) {
+        throw DspException(s"Number: $this, numberOfBits exceeds scoped maximum of $max")
+      }
+    }
+    binaryPointMaximum.foreach { max =>
+      if(number.parameters.binaryPoint > max) {
+        throw DspException(s"Number: $this, decimal position exceeds scoped maximum of $max")
+      }
+    }
+    binaryPointMinimum.foreach { min =>
+      if(number.parameters.binaryPoint < min) {
+        throw DspException(s"Number: $this, decimal position exceeds scoped minimum of $min")
+      }
     }
   }
 }

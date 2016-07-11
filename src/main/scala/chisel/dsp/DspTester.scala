@@ -19,7 +19,7 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
   }
 
   def poke(port: Number, number: Double): Unit = {
-    poke(port.value, FixedPointLiteral(number, port.parameters.decimalPosition).literalValue)
+    poke(port.value, FixedPointLiteral(number, port.parameters.binaryPoint).literalValue)
   }
 
   def poke(port: Number, fixedPointLiteral: Literal): Unit = {
@@ -28,12 +28,12 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
 
   def peek(port: Number): Literal = {
     val sInt = peek(port.value)
-    Literal(sInt, port.parameters.decimalPosition)
+    Literal(sInt, port.parameters.binaryPoint)
   }
 
   def expect(port: Number, expected: FixedPointLiteral): Unit = {
     val sInt = peek(port.value)
-    val result = Literal(sInt, port.parameters.decimalPosition)
+    val result = Literal(sInt, port.parameters.binaryPoint)
     //    println(s"XXXXX ${result.literalValue} != ${expected.literalValue}")
 
     if (result.literalValue != expected.literalValue) {
@@ -44,7 +44,7 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
 
   def expect(port: Number, expected: Literal): Unit = {
     val sInt = peek(port.value)
-    val result = Literal(sInt, port.parameters.decimalPosition)
+    val result = Literal(sInt, port.parameters.binaryPoint)
     //    println(s"XXXXX ${result.literalValue} != ${expected.literalValue}")
 
     if (result.literalValue != expected.literalValue) {

@@ -21,22 +21,22 @@ class Adder3(iw: Int, fw: Int) extends Module {
 class Adder3Tester(c: Adder3, backend: Option[Backend] = None) extends DspTester(c, _backend = backend) {
   for(i <- 0 to 4) {
     val double  = 0.25 * i.toDouble
-    val pokeValue = double.FP(c.io.a.parameters.decimalPosition)
+    val pokeValue = double.FP(c.io.a.parameters.binaryPoint)
     poke(c.io.a, double)
     val result = peek(c.io.c)
     val expected = double + 3.0
 //    val expectedLiteral = FixedPointLiteral(expected, c.io.c.fractionalWidth)
-    val expectedLiteral = expected.FP(c.io.c.parameters.decimalPosition)
+    val expectedLiteral = expected.FP(c.io.c.parameters.binaryPoint)
     println(s"Adder3Tester: a <= $pokeValue c => $result expected $expectedLiteral")
     expect(c.io.c, expectedLiteral)
   }
 }
 class Adder3Spec extends ChiselFlatSpec {
   val numberOfBits  = 8
-  val decimalPosition = 4
+  val binaryPoint = 4
 
   "Adder3" should "should add 3.0 to a number" in {
-    runPeekPokeTester(() => new Adder3(numberOfBits, decimalPosition)){
+    runPeekPokeTester(() => new Adder3(numberOfBits, binaryPoint)){
       (c,b) => new Adder3Tester(c, b)} should be (true)
   }
 }

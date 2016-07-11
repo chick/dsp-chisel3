@@ -92,7 +92,7 @@ class AdderTests(c: Adder, backend: Option[Backend] = None) extends DspTester(c,
     poke(c.io.a, aInput)
     poke(c.io.b, bInput)
 
-    val expectedDouble = Literal(aInput.toDouble + bInput.toDouble, c.io.c.parameters.decimalPosition)
+    val expectedDouble = Literal(aInput.toDouble + bInput.toDouble, c.io.c.parameters.binaryPoint)
 
     val result = peek(c.io.c)
     println(s"addertests: $aInput + $bInput => $result expected $expectedDouble")

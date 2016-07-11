@@ -7,9 +7,9 @@ import chisel.dsp.DspException
 import firrtl_interpreter._
 
 object Parameters {
-  def apply(numberOfBits: Int, decimalPosition: Int): Parameters = {
+  def apply(numberOfBits: Int, binaryPoint: Int): Parameters = {
     val (bigLow, bigHigh) = extremaOfSIntOfWidth(numberOfBits)
-    Parameters(numberOfBits, decimalPosition, bigHigh, bigLow)
+    Parameters(numberOfBits, binaryPoint, bigHigh, bigLow)
   }
 
   /**
@@ -17,21 +17,21 @@ object Parameters {
     * if hi and low require less than requested
     *
     * @param numberOfBits     bits suggested
-    * @param decimalPosition  position of decimal point
+    * @param binaryPoint  position of decimal point
     * @param high             biggest number this could be
     * @param low              smallest number this could be
     * @return
     */
-  def apply(numberOfBits: Int, decimalPosition: Int, high: BigInt, low: BigInt): Parameters = {
+  def apply(numberOfBits: Int, binaryPoint: Int, high: BigInt, low: BigInt): Parameters = {
     val adjustedBits = numberOfBits.min(requiredBitsForSInt(low).max(requiredBitsForSInt(high)))
 
-    val result = new Parameters(adjustedBits: Int, decimalPosition: Int, high: BigInt, low: BigInt)
+    val result = new Parameters(adjustedBits: Int, binaryPoint: Int, high: BigInt, low: BigInt)
 
     result
   }
 }
 
-class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val high: BigInt, val low: BigInt) {
+class Parameters private (val numberOfBits: Int, val binaryPoint: Int, val high: BigInt, val low: BigInt) {
   if(low > high) {
     throw new DspException(s"Error high must be greater than low $toString")
   }
@@ -44,9 +44,9 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
   }
 
   // if the decimal position is less than zero this further restricts the possible low and high values
-  if(decimalPosition < 0) {
-    val mask = BigInt("1" * decimalPosition, 2)
-  }
+//  if(binaryPoint < 0) {
+//    val mask = BigInt("1" * binaryPoint, 2)
+//  }
 
   def generateSInt: SInt = {
     SInt(width = numberOfBits)
@@ -57,7 +57,7 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
 
     Parameters(
       bitsRequired,
-      this.decimalPosition.max(that.decimalPosition),
+      this.binaryPoint.max(that.binaryPoint),
       newHigh,
       newLow
     )
@@ -65,7 +65,7 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
   def * (that: Parameters): Parameters = {
     Parameters(
       this.numberOfBits + that.numberOfBits,
-      this.decimalPosition + that.decimalPosition,
+      this.binaryPoint + that.binaryPoint,
       Array(
         this.high * that.high,
         this.low * that.low
@@ -90,13 +90,25 @@ class Parameters private (val numberOfBits: Int, val decimalPosition: Int, val h
   val multiply = (a: BigInt, b: BigInt) => a * b
 
   override def toString: String = {
-    s"FPP(bits=$numberOfBits,decimal=$decimalPosition,hi=$high,lo=$low)"
+    s"FP(bits=$numberOfBits,decimal=$binaryPoint,hi=$high,lo=$low)"
   }
   def asQmn: String = {
-    s"Q$numberOfBits.$decimalPosition"
+    s"Q$numberOfBits.$binaryPoint"
   }
-  def asQmnWithRange: String = {
+  def asFP: String = {
     val (bigLow, bigHigh) = extremaOfSIntOfWidth(numberOfBits)
-    s"Q$numberOfBits.$decimalPosition"
+    if(bigLow == low && bigHigh == high) {
+      s"FP$numberOfBits.$binaryPoint"
+    }
+    else {
+      val doubleHigh = Literal.toDouble(high, binaryPoint)
+      val doubleLow  = Literal.toDouble(low, binaryPoint)
+      if(high == low) {
+        s"FP$numberOfBits.$binaryPoint[$doubleHigh]"
+      }
+      else {
+        s"FP$numberOfBits.$binaryPoint[$doubleHigh,$doubleLow]"
+      }
+    }
   }
 }

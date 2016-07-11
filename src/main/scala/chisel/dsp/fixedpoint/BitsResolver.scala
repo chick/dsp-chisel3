@@ -9,15 +9,15 @@ case class BitsResolver(a: Number, b: Number) {
   val aParameters = a.parameters
   val bParameters = b.parameters
 
-  def maxFractionalWidth: Int = aParameters.decimalPosition.max(bParameters.decimalPosition)
+  def maxFractionalWidth: Int = aParameters.binaryPoint.max(bParameters.binaryPoint)
 
-  def fractionalDifference: Int = aParameters.decimalPosition - bParameters.decimalPosition
+  def fractionalDifference: Int = aParameters.binaryPoint - bParameters.binaryPoint
 
   def addableSInts: (SInt, SInt) = {
-    if(aParameters.decimalPosition < bParameters.decimalPosition) {
+    if(aParameters.binaryPoint < bParameters.binaryPoint) {
       (a.value, padRight(b, fractionalDifference.abs))
     }
-    else if(aParameters.decimalPosition > bParameters.decimalPosition) {
+    else if(aParameters.binaryPoint > bParameters.binaryPoint) {
       (padRight(a, fractionalDifference.abs), b.value)
     }
     else {
@@ -26,8 +26,7 @@ case class BitsResolver(a: Number, b: Number) {
   }
 
   def padRight(number: Number, numberOfBits: Int): SInt = {
-//    Cat(number.value, Fill(fractionalDifference, 0.U)).asSInt()
-    val filled = Wire(Fill(fractionalDifference.abs, UInt(0, width = 1)))
+    val filled = Wire(init = Fill(fractionalDifference.abs, UInt(0, width = 1)))
     Cat(number.value, filled).asSInt()
   }
 }

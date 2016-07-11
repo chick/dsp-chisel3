@@ -15,6 +15,12 @@ class BehaviorSpec extends FlatSpec with Matchers {
     intercept[DspException] {
       val n = Number(120, 6, OUTPUT)
     }
+    intercept[DspException] {
+      val n = Number(120, 120, OUTPUT)
+    }
+    intercept[DspException] {
+      val n = Number(120, -120, OUTPUT)
+    }
   }
 
   it should "allow override of behavior" in {

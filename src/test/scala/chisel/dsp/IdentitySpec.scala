@@ -17,14 +17,14 @@ class Identity(iw: Int, fw: Int) extends Module {
 }
 
 class IdentityTests(c: Identity, backend: Option[Backend] = None) extends DspTester(c, _backend = backend) {
-  var input = Literal(1.0, c.io.a.parameters.decimalPosition)
+  var input = Literal(1.0, c.io.a.parameters.binaryPoint)
   poke(c.io.a, input)
   var output = peek(c.io.c)
   println(s"identity poke $input")
   println(s"identity peek $output")
 
 
-  input = Literal(-1.0, c.io.a.parameters.decimalPosition)
+  input = Literal(-1.0, c.io.a.parameters.binaryPoint)
   poke(c.io.a, input)
   output = peek(c.io.c)
   println(s"identity poke $input")

@@ -20,20 +20,21 @@ class LiteralSpec extends FlatSpec with Matchers {
 
     a.literalValue should be (15.0)
     a.parameters.numberOfBits should be (5)
-    a.parameters.decimalPosition should be (0)
+    a.parameters.binaryPoint should be (0)
 
     a.value.getWidth should be (5)
   }
 
   it should "work when mantissas are the same size" in {
-    for(mantissaSize <- 0 to 10) {
+    for(mantissaSize <- 2 to 10) {
       for {
         value1 <- DspTester.DoubleRange(0.0, 10, 0.25)
         value2 <- DspTester.DoubleRange(0.0, 10, 0.25)
       } {
         val expected = Literal(value1 + value2, mantissaSize)
 
-        expected.literalValue should be (value1 + value2)
+//        println(s"$value1 + $value2 = $expected")
+        expected.toDouble should be (value1 + value2)
       }
     }
   }
