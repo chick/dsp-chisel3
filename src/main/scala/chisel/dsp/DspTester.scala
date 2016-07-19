@@ -28,7 +28,7 @@ class DspTester[T <: Module](c: T, _backend: Option[Backend] = None) extends Pee
 
   def peek(port: Number): Literal = {
     val sInt = peek(port.value)
-    Literal(sInt, port.parameters.binaryPoint)
+    new Literal(sInt, port.parameters)
   }
 
   def expect(port: Number, expected: FixedPointLiteral): Unit = {

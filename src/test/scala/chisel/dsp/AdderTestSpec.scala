@@ -111,18 +111,4 @@ class AdderTestSpec extends FlatSpec with Matchers {
     runPeekPokeTester(() => new Adder(params), "firrtl"){
       (c,b) => new AdderTests(c,b)} should be (true)
   }
-
-//  "Params ranges" should "cover things well" in {
-//    val params = AdderParams(FixedParams(2,0), FixedParams(2,0), FixedParams(3,0))
-//
-//    val r1 = params.getRange(A)
-//    var r2 = params.getRange(B)
-//
-//    for {
-//      a <- r1
-//      b <- r2
-//    } {
-//      println(s"$a $b")
-//    }
-//  }
 }

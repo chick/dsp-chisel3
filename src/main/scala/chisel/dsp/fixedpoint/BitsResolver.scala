@@ -15,10 +15,10 @@ case class BitsResolver(a: Number, b: Number) {
 
   def addableSInts: (SInt, SInt) = {
     if(aParameters.binaryPoint < bParameters.binaryPoint) {
-      (a.value, padRight(b, fractionalDifference.abs))
+      (padRight(a, fractionalDifference.abs), b.value)
     }
     else if(aParameters.binaryPoint > bParameters.binaryPoint) {
-      (padRight(a, fractionalDifference.abs), b.value)
+      (a.value, padRight(b, fractionalDifference.abs))
     }
     else {
       (a.value, b.value)

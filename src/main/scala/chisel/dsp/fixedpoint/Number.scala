@@ -44,10 +44,11 @@ class Number(initialParameters: Parameters)(implicit behavior: Behavior) extends
     val resolver = BitsResolver(this, that)
     val newParameters = this.parameters + that.parameters
 
+    println(s"Number.add newParameters are $newParameters")
     val result = Wire(new Number(newParameters))
     val (newThisValue, newThatValue) = resolver.addableSInts
 
-    result.value := newThisValue + newThatValue
+    result.value := newThisValue +& newThatValue
     result
   }
 
