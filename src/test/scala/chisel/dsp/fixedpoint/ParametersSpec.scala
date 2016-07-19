@@ -107,5 +107,9 @@ class ParametersSpec extends FlatSpec with Matchers {
   behavior of "multiplication"
 
   it should "confirm min calculation" in {
+    val p1 = Parameters(5, -2, 7, 6)
+    val p2 = Parameters(1, 0, 0, -1)
+
+    val p3 = p1 + p2
   }
 }

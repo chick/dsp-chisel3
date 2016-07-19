@@ -40,7 +40,7 @@ class Parameters private (val numberOfBits: Int, val binaryPoint: Int, val high:
     throw new DspException(s"Error low to small for numberOfBits $toString lowest possible is $lowest")
   }
   if(high > highest) {
-    throw new DspException(s"Error high to small for numberOfBits $toString highest possible is $highest")
+    throw new DspException(s"Error high to large for numberOfBits $toString highest possible is $highest")
   }
 
   // if the decimal position is less than zero this further restricts the possible low and high values
@@ -63,19 +63,14 @@ class Parameters private (val numberOfBits: Int, val binaryPoint: Int, val high:
     )
   }
   def * (that: Parameters): Parameters = {
+    val (newHigh, newLow) = extremesOfOperation(that, multiply)
+    val bitsRequired = requiredBitsForSInt(newHigh).max(requiredBitsForSInt(newLow))
+
     Parameters(
-      this.numberOfBits + that.numberOfBits,
+      bitsRequired,
       this.binaryPoint + that.binaryPoint,
-      Array(
-        this.high * that.high,
-        this.low * that.low
-      ).max,
-      Array(
-        this.high * that.high,
-        this.low * that.low,
-        this.low * that.high,
-        this.high * that.low
-      ).min
+      newHigh,
+      newLow
     )
   }
 
